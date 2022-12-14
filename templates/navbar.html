@@ -1,0 +1,17 @@
+<a href="{% url 'home' %}">
+    <h2> Home </h2>
+    <!-- This is a comment section
+    mmeso reg: 230758769486
+    -->
+</a>
+
+<form method="GET" action="{%url 'home' %}">
+    <input type="text" name="q" placeholder="Search Rooms..." />
+</form>
+
+{%if request.user.is_authenticated%}
+<div class="h1">Welcome Back @{{user.username}}</div>
+<a href="{% url 'logout' %}"> Logout</a>
+{%else%}
+<a href="{% url 'login' %}"> Login</a>
+{%endif%}
