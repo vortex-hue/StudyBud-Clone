@@ -1,12 +1,15 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
-from .models import Room, Topic
+from .models import Room, Topic, Message
+
 # to into Q for query search
 from django.db.models import Q
 from .forms import RoomForm
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+
 #for flash messages
 from django.contrib import messages
 # rooms = [
@@ -19,12 +22,15 @@ from django.contrib import messages
 
 #login page
 def LoginPage(request):
+    page = 'login'
+    if request.user.is_authenticated:
+        return redirect('home')
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
 
         try: #to check if a user exists
-            user = User.objects.get(username=username)
+            user = User.objects.get(username=username).lower()
         except:
             messages.error(request, "User doesn't exist, Try Registering ")
 
@@ -34,13 +40,28 @@ def LoginPage(request):
             return redirect('home')
         else:
             messages.error(request, "Password is incorrect")
-    context = {}
+    context = {"page" : page}
     return render(request, 'baseapp/login_register.html', context)
 
 #Logout page
 def LogoutPage(request):
     logout(request)
     return redirect('login')
+
+#Register view
+def RegisterUser(request):
+    form = UserCreationForm()
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, "An Error Occurred During Registration")
+    return render(request, "baseapp/login_register.html", {'form':form})
 
 
 def home(request):
@@ -52,14 +73,35 @@ def home(request):
     )
     room_count = rooms.count()
     topics = Topic.objects.all()
-    context = {'rooms' : rooms, 'topics': topics, 'room_count': room_count}
+    room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
+    context = {'rooms' : rooms, 'topics': topics, 'room_count': room_count, "room_messages": room_messages}
     return render(request, 'baseapp/index.html', context)
 
 
 def room(request, pk):
     room = Room.objects.get(id=pk)
-    context = {'room' : room}
+    room_message = room.message_set.all().order_by('-created')
+    participants = room.participants.all()
+    if request.method == 'POST':
+        message = Message.objects.create(
+            user = request.user,
+            room = room,
+            body = request.POST.get('body')
+        )
+        room.participants.add(request.user)
+        return redirect('room', pk=room.id)
+    context = {'room' : room, 'room_message': room_message, 'participants': participants}
     return render(request, 'baseapp/room.html', context)
+
+
+def userProfile(request, pk):
+    user = User.objects.get(id=pk)
+    rooms = user.room_set.all()
+    room_messages = user.message_set.all()
+    topics = Topic.objects.all()
+    context = {'user':user, 'rooms': rooms, 'room_messages' : room_messages, 'topics': topics}
+    return render(request, 'baseapp/profile.html', context)
+
 
 @login_required(login_url="login")
 def CreateRoom(request):
@@ -67,7 +109,9 @@ def CreateRoom(request):
     if request.method == 'POST':
         form = RoomForm(request.POST)
         if form.is_valid():
-            form.save()
+            room = form.save(commit=False)
+            room.host = request.user
+            room.save()
         return redirect('home')
     context = {'form': form}
     return render(request, 'baseapp/form_list.html', context)
@@ -99,3 +143,13 @@ def DeleteRoom(request, pk):
     return render(request, 'baseapp/delete.html', {'obj':room})
 
 
+#Delete Messages
+@login_required(login_url="login")
+def DeleteMessage(request, pk):
+    message = Message.objects.get(id=pk)
+    if request.user != message.user:
+        return HttpResponse('Your are not allowed here!!')
+    if request.method == 'POST':
+        message.delete()
+        return redirect('home')
+    return render(request, 'baseapp/delete.html', {'obj':message})

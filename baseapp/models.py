@@ -21,9 +21,9 @@ class Room(models.Model):
     description = models.TextField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
-    #participants
+    participants = models.ManyToManyField(User, related_name='participants', blank=True)
 
-    #oRDERING BY THE LATEST FIRST
+    #ORDERING BY THE LATEST FIRST
     class Meta:
         ordering = ['-updated', '-created']
 
@@ -40,3 +40,9 @@ class Message(models.Model):
 
     def __str__(self):
         return self.body[0:60]
+
+    class Meta:
+        ordering = ['-updated', '-created']
+
+#personal token types
+# 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
