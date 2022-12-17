@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path("login/", views.LoginPage, name='login'),
@@ -12,4 +13,8 @@ urlpatterns = [
     path("update-room/<str:pk>/", views.UpdateRoom, name='update-room'),
     path("delete-room/<str:pk>/", views.DeleteRoom, name='delete-room'),
     path("delete-message/<str:pk>/", views.DeleteMessage, name='delete-message'),
-]
+    path("edit-profile/<str:pk>/", views.UpdateProfile, name='edit-profile'),
+    path("topic/", views.TopicPage, name='topic'),
+    path("activity/", views.ActivityPage, name='activity'),
+    path("settings/<str:pk>/", views.Setting, name='settings'),
+    ]

@@ -1,0 +1,44 @@
+{% include 'navbar.html' %}
+<h1> This is the room page</h1>
+<style>
+    .room-container{
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+    }
+</style>
+{%block content%}
+    <div class="room-container">
+        <div class="first-roll">
+            <a href="{{request.META.HTTP_REFERER}}"> Go Back</a>
+            <h1> {{room.id}} -- {{room.name}}</h1>
+
+            <p>{{room.description | truncatewords:"10" }}</p>
+            <h3 style='text-align:center;'> Conversations </h3>
+            {% for msg in room_messages%}
+                {%if request.user == msg.user%}
+                    <a href="{%url 'delete-message' msg.id %}"> Delete comment</a>
+                {%endif%}
+                <li>@ {{msg.user}}   {{msg.created | timesince}} ago</li>
+                <p>{{ msg }}</p>
+                <hr />
+            {% endfor %}
+
+            {%if request.user.is_authenticated%}
+            <div class="comment-creation">
+                <form method="POST" action="">
+                    {% csrf_token %}
+                    <input type="text" name="body" placeholder="Write your message" />
+                    <input type="submit" value="Send" />
+                </form>
+            </div>
+        </div>
+        <div class="sec-roll">
+            <h3> Participants </h3>
+            {%for user in participants%}
+                <p>@{{user.username}}</p>
+            {%endfor%}
+        </div>
+
+    </div>
+    {%endif%}
+{%endblock%}

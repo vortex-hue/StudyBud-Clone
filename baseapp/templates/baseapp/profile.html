@@ -1,28 +1,89 @@
 {% extends 'main.html'%}
 
-{%block content%}
-<style>
-    .profile-container {
-        display: grid;
-        grid-template-columns: 1fr 3fr 1fr;
-    }
-</style>
-<h1>{{user.username}}</h1>
-<div class="profile-container">
-    <div class="1">
-        {%include "baseapp/topics_component.html" %}
+{%block content %}
+  <main class="profile-page layout layout--3">
+    <div class="container">
+      <!-- Topics Start -->
+      <div class="topics">
+        <div class="topics__header">
+          <h2>Browse Topics</h2>
+        </div>
+        <ul class="topics__list">
+          {%include 'baseapp/topics_component.html' %}
+        </ul>
+        <a class="btn btn--link" href="topics.html">
+          More
+          <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+            <title>chevron-down</title>
+            <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
+          </svg>
+        </a>
+      </div>
+      <!-- Topics End -->
+
+      <!-- Room List Start -->
+      <div class="roomList">
+        <div class="profile">
+          <div class="profile__avatar">
+            <div class="avatar avatar--large active">
+              <img src="https://randomuser.me/api/portraits/men/11.jpg" />
+            </div>
+          </div>
+          <div class="profile__info">
+            <h3>{{user.username}}</h3>
+            <p>@{{user.username}}</p>
+            {%if request.user == user %}
+            <a href="{%url 'edit-profile' user.id%}" class="btn btn--main btn--pill">Edit Profile</a>
+            {% endif %}
+          </div>
+          <div class="profile__about">
+            <h3>About</h3>
+            <p>
+              This is not a dynamic writeup, it's just hardcoded and not from the database
+              because i haven't created a table for that yet!!
+            </p>
+          </div>
+        </div>
+
+        <div class="roomList__header">
+          <div>
+            <h2>Study Rooms Hosted by {{user.username}}</a>
+            </h2>
+          </div>
+        </div>
+          <div class="mobile-menu">
+            <form class="header__search">
+              <label>
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+                  <title>search</title>
+                  <path
+                    d="M32 30.586l-10.845-10.845c1.771-2.092 2.845-4.791 2.845-7.741 0-6.617-5.383-12-12-12s-12 5.383-12 12c0 6.617 5.383 12 12 12 2.949 0 5.649-1.074 7.741-2.845l10.845 10.845 1.414-1.414zM12 22c-5.514 0-10-4.486-10-10s4.486-10 10-10c5.514 0 10 4.486 10 10s-4.486 10-10 10z"
+                  ></path>
+                </svg>
+                <input placeholder="Search for posts" />
+              </label>
+            </form>
+            <div class="mobile-menuItems">
+              <a class="btn btn--main btn--pill" href="#">Browse Topics</a>
+              <a class="btn btn--main btn--pill" href="#">Recent Activities</a>
+            </div>
+          </div>
+          <div class="roomList__header">
+            <div>
+            </div>
+          </div>
+      <!--Room list starts -->
+          {%include 'baseapp/feed_component.html' %}
+      <!-- Room List End -->
+
+              <!-- Activities Start -->
+              <div class="activities">
+                <div class="activities__header">
+                  <h2>Recent Activities</h2>
+                  </div>
+                  {%include 'baseapp/activity_component.html' %}
+              </div>
+              <!-- Activities End -->
     </div>
-
-    <div class="2">
-        {%include "baseapp/feed_component.html" %}
-    </div>
-
-    <div class="3">
-        {%include "baseapp/activity_component.html" %}
-    </div>
-
-</div>
-
-
-
+  </main>
 {%endblock content%}
